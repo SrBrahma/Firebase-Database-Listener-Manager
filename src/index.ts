@@ -1,4 +1,12 @@
-import type { EventType, } from '@firebase/database-types';
+
+
+/**
+ * As RTDB packages define.
+ *
+ * Would use @firebase/database-types, but, it requires @firebase/logger.
+ * To keep this small package small, defining it here.
+*/
+type EventType = "value" | "child_added" | "child_changed" | "child_moved" | "child_removed";
 
 /** Simple type definition to be cross-platform / cross-package */
 type Reference = {
@@ -21,11 +29,12 @@ export class Listeners<ListenersIds extends string[] = []> {
    */
   add(ref: Reference | Query, options?: { eventType?: EventType, listenerId?: ListenersIds[number]; }) {
     const listenerId = options?.listenerId;
-    const index = this.unsubscribers.push(() => {
+    const fun = () => {
       ref.off(options?.eventType);
       if (listenerId)
         delete this.listenersIds[listenerId];
-    }) - 1; // - 1 as .push() returns the new length.
+    };
+    const index = this.unsubscribers.push(fun) - 1; // - 1 as .push() returns the new length.
 
     if (listenerId)
       this.listenersIds[listenerId] = index;
