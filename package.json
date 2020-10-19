@@ -1,0 +1,37 @@
+{
+  "name": "firebase-database-listeners-manager",
+  "version": "1.0.0",
+  "description": "Package to assist the developer to set and unset listeners to Firebase Realtime Database references.",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "tsc -d && npm publish",
+    "start": "npm run deploy",
+    "major": "npm --no-git-tag-version version major",
+    "minor": "npm --no-git-tag-version version minor",
+    "minorD": "npm run minor && npm run deploy",
+    "patch": "npm --no-git-tag-version version patch",
+    "patchD": "npm run patch && npm run deploy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SrBrahma/Firebase-Database-Listeners-Manager.git"
+  },
+  "keywords": [
+    "Firebase",
+    "Realtime",
+    "Database",
+    "Listener",
+    "Unsubscriber"
+  ],
+  "author": "Henrique Bruno (aka SrBrahma)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SrBrahma/Firebase-Database-Listeners-Manager/issues"
+  },
+  "homepage": "https://github.com/SrBrahma/Firebase-Database-Listeners-Manager#readme",
+  "devDependencies": {
+    "@firebase/database-types": "^0.5.2",
+    "typescript": "^4.0.3"
+  }
+}
