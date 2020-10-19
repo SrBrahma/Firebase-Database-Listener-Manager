@@ -27,10 +27,10 @@ export class Listeners<ListenersIds extends string[] = []> {
    *
    * Defaults to undefined.
    */
-  add(ref: Reference | Query, options?: { eventType?: EventType, listenerId?: ListenersIds[number]; }) {
-    const listenerId = options?.listenerId;
+  add(ref: Reference | Query, options?: { event?: EventType, id?: ListenersIds[number]; }) {
+    const listenerId = options?.id;
     const fun = () => {
-      ref.off(options?.eventType);
+      ref.off(options?.event);
       if (listenerId)
         delete this.listenersIds[listenerId];
     };
@@ -60,5 +60,12 @@ export class Listeners<ListenersIds extends string[] = []> {
     const index = this.listenersIds[listenerId];
     if (index !== undefined)
       this.unsubscribeByIndex(index);
+  }
+
+  /** Return is the given listenerId is active
+   * @return boolean
+   */
+  isListenerActive(listenerId: ListenersIds[number]): boolean {
+    return !!this.listenersIds[listenerId];
   }
 }

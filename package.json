@@ -1,6 +1,6 @@
 {
   "name": "firebase-database-listeners-manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Package to assist the developer to set and unset listeners to Firebase Realtime Database references.",
   "main": "lib/index.js",
   "scripts": {
