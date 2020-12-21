@@ -9,7 +9,7 @@ type EventType = "value" | "child_added" | "child_changed" | "child_moved" | "ch
 /** Simple type definition to be cross-platform / cross-package */
 type Reference = {
   off: (event?: EventType) => any;
-  once: (event?: EventType, ...rest: any) => Promise<any>;
+  once: (event: EventType, ...rest: any) => Promise<any>;
   [rest: string]: any;
 };
 type Query = Reference;
@@ -69,7 +69,14 @@ export class Listeners<ListenersIds extends string[] = []> {
     event?: EventType,
     /** An id string you may set to specifically turn the listener off with unsubscribeById() */
     listenerId?: ListenersIds[number];
-    /** Defaults to false */
+    /** Will call the onAllFirstLoaded() callback when all the other listeners that
+     * also uses this option have first loaded.
+     *
+     * It uses a once() to listen for the new data. It uses the event option as event. If none entered,
+     * will default to `value`.
+     *
+     * Defaults to `false`.
+     * */
     watchFirstLoad?: boolean;
   }): void {
     const innerId = this.nextInnerId;
@@ -93,7 +100,7 @@ export class Listeners<ListenersIds extends string[] = []> {
 
     if (watchFirstLoad) {
       this.watchingFirstLoad[innerId] =
-        ref.once(event).then(() => this.listenerFirstLoaded(innerId));
+        ref.once(event ?? 'value').then(() => this.listenerFirstLoaded(innerId));
 
     }
 
