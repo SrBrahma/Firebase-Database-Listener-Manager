@@ -16,6 +16,14 @@ type Query = Reference;
 
 // To easily unsubscribe from Realtime Db listeners.
 export class Listeners<ListenersIds extends string[] = []> {
+
+  defaultWatchFirstLoad;
+  constructor(options?: {
+    /** Will apply it for all add() */
+    watchFirstLoad?: boolean;
+  }) {
+    this.defaultWatchFirstLoad = options?.watchFirstLoad ?? false;
+  }
   private nextInnerId = 0;
 
   // Converts the listenerId to its innerId
@@ -63,49 +71,56 @@ export class Listeners<ListenersIds extends string[] = []> {
   /**
    * Adds a listener which can be later smartly unsubscribed.
    */
-  add(ref: Reference | Query, options?: {
+  add<T extends (Reference | Reference[])>(ref: T, options?: {
     /* When running a unsubscriber and if no eventType option was passed here,
     * will remove the listener for all events types (ref.off() without args). */
-    event?: EventType,
+    event?: EventType;
     /** An id string you may set to specifically turn the listener off with unsubscribeById() */
-    listenerId?: ListenersIds[number];
+    listenerId?: T extends Reference ? ListenersIds[number] : never;
     /** Will call the onAllFirstLoaded() callback when all the other listeners that
      * also uses this option have first loaded.
      *
      * It uses a once() to listen for the new data. It uses the event option as event. If none entered,
      * will default to `value`.
      *
-     * Defaults to `false`.
+     * Defaults to `false` or the value set in the constructor.
      * */
     watchFirstLoad?: boolean;
   }): void {
-    const innerId = this.nextInnerId;
-    // const listenerId = options?.listenerId
-    // const watchFirstLoad = options.
-    const { listenerId, event, watchFirstLoad } = options || {};
 
-    // The function to unsubscribe this listener.
-    const unsubscriber = () => {
-      ref.off(event);
+    const fun = (ref: Reference) => {
+
+      const innerId = this.nextInnerId;
+      // const listenerId = options?.listenerId
+      // const watchFirstLoad = options.
+      const { listenerId, event, watchFirstLoad = this.defaultWatchFirstLoad } = options || {};
+
+      // The function to unsubscribe this listener.
+      const unsubscriber = () => {
+        ref.off(event);
+        if (listenerId)
+          delete this.listenersIds[listenerId];
+        if (watchFirstLoad)
+          delete this.watchingFirstLoad[innerId]; // It may already not exist anymore
+      };
+
+      this.unsubscribers[innerId] = unsubscriber;
+
       if (listenerId)
-        delete this.listenersIds[listenerId];
-      if (watchFirstLoad)
-        delete this.watchingFirstLoad[innerId]; // It may already not exist anymore
+        this.listenersIds[listenerId] = innerId;
+
+      if (watchFirstLoad) {
+        this.watchingFirstLoad[innerId] =
+          ref.once(event ?? 'value').then(() => this.listenerFirstLoaded(innerId));
+
+      }
+
+      this.nextInnerId++;
     };
-
-    this.unsubscribers[innerId] = unsubscriber;
-
-    if (listenerId)
-      this.listenersIds[listenerId] = innerId;
-
-    if (watchFirstLoad) {
-      this.watchingFirstLoad[innerId] =
-        ref.once(event ?? 'value').then(() => this.listenerFirstLoaded(innerId));
-
-    }
-
-    this.nextInnerId++;
+    Array.isArray(ref) ? (ref as Reference[]).forEach(ref => fun(ref)) : fun(ref as Reference);
   }
+
+
 
 
   unsubscribeFromAll() {
