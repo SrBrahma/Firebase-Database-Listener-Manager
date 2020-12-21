@@ -1,11 +1,12 @@
 {
   "name": "firebase-database-listeners-manager",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Package to assist the developer to set and unset listeners to Firebase Realtime Database references.",
   "main": "lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy": "tsc -d && npm publish",
+    "build": "tsc -d",
+    "deploy": "npm run build && npm publish",
     "start": "npm run deploy",
     "major": "npm --no-git-tag-version version major",
     "minor": "npm --no-git-tag-version version minor",
