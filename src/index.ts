@@ -17,7 +17,7 @@ type Reference = {
 // To easily unsubscribe from Realtime Db listeners.
 export class Listeners<ListenersIds extends string[] = []> {
 
-  defaultWatchFirstLoad;
+  private defaultWatchFirstLoad;
   constructor(options?: {
     /** Will apply it for all add() */
     watchFirstLoad?: boolean;

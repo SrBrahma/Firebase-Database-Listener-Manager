@@ -1,3 +1,7 @@
+## 2.2.1
+
+* Changed defaultWatchFirstLoad to private
+
 ## 2.2.0 - December 24 2020
 
 * If an error occurs at the once in watchingFirstLoad (like permission error), it will be catch and ignored.
