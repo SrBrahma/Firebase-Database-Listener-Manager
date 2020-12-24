@@ -4,7 +4,7 @@
  * Would use @firebase/database-types, but, it requires @firebase/logger.
  * To keep this small package small, defining it here.
 */
-type EventType = "value" | "child_added" | "child_changed" | "child_moved" | "child_removed";
+type EventType = 'value' | 'child_added' | 'child_changed' | 'child_moved' | 'child_removed';
 
 /** Simple type definition to be cross-platform / cross-package */
 type Reference = {
@@ -12,7 +12,7 @@ type Reference = {
   once: (event: EventType, ...rest: any) => Promise<any>;
   [rest: string]: any;
 };
-type Query = Reference;
+// type Query = Reference;
 
 // To easily unsubscribe from Realtime Db listeners.
 export class Listeners<ListenersIds extends string[] = []> {
@@ -81,7 +81,7 @@ export class Listeners<ListenersIds extends string[] = []> {
      * also uses this option have first loaded.
      *
      * It uses a once() to listen for the new data. It uses the event option as event. If none entered,
-     * will default to `value`.
+     * will default to `value`. If an error occurs, it will just be ignored for now.
      *
      * Defaults to `false` or the value set in the constructor.
      * */
@@ -111,7 +111,7 @@ export class Listeners<ListenersIds extends string[] = []> {
 
       if (watchFirstLoad) {
         this.watchingFirstLoad[innerId] =
-          ref.once(event ?? 'value').then(() => this.listenerFirstLoaded(innerId));
+          ref.once(event ?? 'value').then(() => this.listenerFirstLoaded(innerId)).catch(() => null);
 
       }
 
