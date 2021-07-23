@@ -8,7 +8,7 @@ type EventType = 'value' | 'child_added' | 'child_changed' | 'child_moved' | 'ch
 
 /** Simple type definition to be cross-platform / cross-package */
 type Reference = {
-  off: (event?: EventType) => any;
+  off: (event?: EventType, callback?: () => any) => any;
   once: (event: EventType, ...rest: any) => Promise<any>;
   [rest: string]: any;
 };
@@ -31,12 +31,10 @@ export class Listeners<ListenersIds extends string[] = []> {
 
   private unsubscribers: { [innerId: number]: (() => any); } = {};
 
-  // points to the respective promise, but won't do anything with it for now.
-  private watchingFirstLoad: { [innerId: number]: Promise<any>; } = {};
+  // Points to the firstLoadListener unsubscriber. Execute it if cleaning up out of proper firstLoad execution.
+  private watchingFirstLoad: { [innerId: number]: () => void; } = {};
 
-  private unsubscribeByInnerId(innerId: number) {
-    this.unsubscribers[innerId]();
-  }
+
 
   /** The external callback to be called when all watchedFirstLoad listeners are done */
   private onAllFirstLoadedCb: (() => void) | null = null;
@@ -96,6 +94,7 @@ export class Listeners<ListenersIds extends string[] = []> {
       const { listenerId, event, watchFirstLoad = this.defaultWatchFirstLoad } = options || {};
 
       // The function to unsubscribe this listener.
+      // This will also remove the firstLoad listener, as uses the same ref and event.
       const unsubscriber = () => {
         ref.off(event);
         if (listenerId)
@@ -110,9 +109,14 @@ export class Listeners<ListenersIds extends string[] = []> {
         this.listenersIds[listenerId] = innerId;
 
       if (watchFirstLoad) {
-        this.watchingFirstLoad[innerId] =
-          ref.once(event ?? 'value').then(() => this.listenerFirstLoaded(innerId)).catch(() => null);
-
+        const firstLoadUnsubscriber = () => ref.off(event, callback);
+        const callback = () => {
+          this.listenerFirstLoaded(innerId);
+          firstLoadUnsubscriber();
+        };
+        // using .on instead of .once because https://github.com/invertase/react-native-firebase/issues/4865
+        ref.on(event ?? 'value', callback);
+        this.watchingFirstLoad[innerId] = firstLoadUnsubscriber;
       }
 
       this.nextInnerId++;
@@ -125,6 +129,10 @@ export class Listeners<ListenersIds extends string[] = []> {
 
   unsubscribeFromAll() {
     Object.values(this.unsubscribers).forEach(unsubscriber => unsubscriber());
+  }
+
+  private unsubscribeByInnerId(innerId: number) {
+    this.unsubscribers[innerId]();
   }
 
   /** Do nothing if id is invalid. */
